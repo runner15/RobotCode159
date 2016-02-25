@@ -45,9 +45,84 @@ void setup() { // put your setup code here, to run once:
     delay(20);
   }
   
-}
+} //End setup
+
 
 void loop() { // put your main code here, to run repeatedly:
-  // read calibrated sensor values + obtain measure of line position from 0 to 9000
-  unsigned int position = qtra.readLine(sensorValues);
-}
+  // read calibrated sensor values + obtain measure of line position from 0 to 7000
+  unsigned int line_position = qtra.readLine(sensorValues);
+  
+  // begin line
+  follow_line(line_position);
+} //End main loop
+
+
+// line following function
+//  Proportional Control Only
+void follow_line(int line_position) //follow the line
+{
+
+  // 0 is far Right sensor while 7 (7000 return) is far Left sensor
+
+  switch(line_position)
+  {
+       
+    // Line has moved off the left edge of sensor
+    // This will make it turn fast to the left
+    case 7000:
+           digitalWrite(dir_a, HIGH); 
+           analogWrite(pwm_a, 200);
+           digitalWrite(dir_b, LOW);  
+           analogWrite(pwm_b, 200);
+    break;
+
+    // Line had moved off the right edge of sensor
+    // This will make it turn fast to the right
+    case 0:     
+           digitalWrite(dir_a, LOW); 
+           analogWrite(pwm_a, 200);
+           digitalWrite(dir_b, HIGH);  
+           analogWrite(pwm_b, 200);
+    break;
+ 
+    // The line is still within the sensors. 
+    // This will calculate adjusting speed to keep the line in center.
+    default:      
+      error = (float)line_position - 3500; // 3500 is center measure of 7000 far left and 0 on far right
+ 
+      // This sets the motor speed based on a proportional only formula.
+      // kp is the floating-point proportional constant you need to tune. 
+      // Maybe start with a kp value around 1.0, tuned in declared Proportional Control loop vars at the top of this code.
+      // Note that it's very important you get your signs right, or else the
+      // control loop will be unstable.
+   
+      // calculate the new Process Variable
+      // this is the value that will be used to alter the speeds
+      PV = kp * error;
+  
+      // this section limits the PV (motor speed pwm value)  
+      // limit PV to 55
+      if (PV > 55)
+      {
+        PV = 55;
+      }
+  
+      if (PV < -55)
+      {
+        PV = -55;
+      }
+      
+      // adjust motor speeds to correct the path
+      // Note that if PV > 0 the robot needs to turn left
+      m1Speed = 200 - PV;
+      m2Speed = 200 + PV;
+     
+      //set motor speeds
+      digitalWrite(dir_a, LOW);  
+      analogWrite(pwm_a, m1Speed);
+      digitalWrite(dir_b, LOW);  
+      analogWrite(pwm_b, m2Speed);
+      break;
+  } 
+
+} // end follow_line  
