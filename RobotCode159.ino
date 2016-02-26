@@ -1,3 +1,4 @@
+#include <Servo.h>
 #include <QTRSensors.h>
 
 #define NUM_SENSORS             8  // number of sensors used
@@ -27,6 +28,11 @@ float kp = 1;  // This is the Proportional value. Tune this value to affect foll
 int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
+// Servo
+Servo servoLeft;
+Servo servoRight;
+unsigned int servoTotal =0;
+
 void setup() { // put your setup code here, to run once:
   //Set control pins to be outputs
   pinMode(pwm_a, OUTPUT);  
@@ -50,7 +56,7 @@ void setup() { // put your setup code here, to run once:
 
 void loop() { // put your main code here, to run repeatedly:
   // read calibrated sensor values + obtain measure of line position from 0 to 7000
-  unsigned int line_position = qtra.readLine(sensorValues);
+  line_position = qtra.readLine(sensorValues);
   
   // begin line
   follow_line(line_position);
@@ -125,4 +131,15 @@ void follow_line(int line_position) //follow the line
       break;
   } 
 
-} // end follow_line  
+} // end follow_line 
+
+void move_servo(int servoTotal) {
+  servoRight.write(50); delay(15); //Turn inside servo back
+  servoRight.write(0); delay(15); //Push ring out
+  if (servoTotal == 2) //Run the inside servo
+  {
+    servoLeft.write(0); delay(15);
+    servoLeft.write(50); delay(15);
+  }
+}
+
