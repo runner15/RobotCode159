@@ -1,4 +1,4 @@
-#include <Servo.h>
+#include <VarSpeedServo.h> 
 #include <QTRSensors.h>
 
 #define NUM_SENSORS             8  // number of sensors used
@@ -29,9 +29,9 @@ int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
 // Servo
-Servo servoLeft;
-Servo servoRight;
-unsigned int servoTotal =0;
+VarSpeedServo myservo; 
+VarSpeedServo myservo1;
+unsigned int servoTotal = 1;
 
 void setup() { // put your setup code here, to run once:
   //Set control pins to be outputs
@@ -39,6 +39,9 @@ void setup() { // put your setup code here, to run once:
   pinMode(pwm_b, OUTPUT);
   pinMode(dir_a, OUTPUT);  
   pinMode(dir_b, OUTPUT);  
+
+  myservo.attach(9);
+  myservo1.attach(10); 
 
   //set both motors to stop
   analogWrite(pwm_a, 0);  
@@ -134,12 +137,12 @@ void follow_line(int line_position) //follow the line
 } // end follow_line 
 
 void move_servo(int servoTotal) {
-  servoRight.write(50); delay(15); //Turn inside servo back
-  servoRight.write(0); delay(15); //Push ring out
+  myservo.write(0,30,true); //Turn inside servo back
+  myservo.write(35,30,true); //Push ring out
   if (servoTotal == 2) //Run the inside servo
   {
-    servoLeft.write(0); delay(15);
-    servoLeft.write(50); delay(15);
+    myservo1.write(35,30,true);
+    myservo1.write(0,30,true);
   }
 }
 
