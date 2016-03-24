@@ -1,4 +1,7 @@
+#include <MotorDriver.h>
+#include <seeed_pwm.h>
 #include <VarSpeedServo.h> 
+
 #include <QTRSensors.h>
 
 #define NUM_SENSORS             8  // number of sensors used
@@ -18,6 +21,9 @@ int pwm_b = 11;  //PWM control for Ardumoto outputs B3 and B4 is on digital pin 
 int dir_a = 12;  //direction control for Ardumoto outputs A1 and A2 is on digital pin 12  (Left motor)
 int dir_b = 13;  //direction control for Ardumoto outputs B3 and B4 is on digital pin 13  (Right motor)
 
+#define servoRightPin A1
+#define servoLeftPin A0
+
 // motor tuning vars 
 int calSpeed = 165;   // tune value motors will run while auto calibration sweeping turn over line (0-255)
 
@@ -29,8 +35,8 @@ int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
 // Servo
-VarSpeedServo myservo; 
-VarSpeedServo myservo1;
+VarSpeedServo servoRight;    // create servo object to control a servo 
+VarSpeedServo servoLeft;
 unsigned int servoTotal = 1;
 
 void setup() { // put your setup code here, to run once:
@@ -40,8 +46,8 @@ void setup() { // put your setup code here, to run once:
   pinMode(dir_a, OUTPUT);  
   pinMode(dir_b, OUTPUT);  
 
-  myservo.attach(9);
-  myservo1.attach(10); 
+  servoRight.attach(servoRightPin);
+  servoLeft.attach(servoLeftPin); 
 
   //set both motors to stop
   analogWrite(pwm_a, 0);  
@@ -136,13 +142,13 @@ void follow_line(int line_position) //follow the line
 
 } // end follow_line 
 
-void move_servo(int servoTotal) {
-  myservo.write(0,30,true); //Turn inside servo back
-  myservo.write(35,30,true); //Push ring out
+/*void move_servo(int servoTotal) {
+  ServoRight.write(125, 30, true); //back
+  servoRight.write(90, 30, true); //push out
   if (servoTotal == 2) //Run the inside servo
   {
-    myservo1.write(35,30,true);
-    myservo1.write(0,30,true);
+    servoLeft.write(8, 30, true); //back
+    servoLeft.write(45, 30, true); //push out
   }
-}
+}*/
 
