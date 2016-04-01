@@ -68,19 +68,15 @@ void follow_line(int line_position) //follow the line
     // Line has moved off the left edge of sensor
     // This will make it turn fast to the left
     case 7000:
-           digitalWrite(dir_a, HIGH); 
-           analogWrite(pwm_a, 200);
-           digitalWrite(dir_b, LOW);  
-           analogWrite(pwm_b, 200);
+           motor.speed(0, -1);            // set motor0 to speed 100
+           motor.speed(1, 100);
     break;
 
     // Line had moved off the right edge of sensor
     // This will make it turn fast to the right
     case 0:     
-           digitalWrite(dir_a, LOW); 
-           analogWrite(pwm_a, 200);
-           digitalWrite(dir_b, HIGH);  
-           analogWrite(pwm_b, 200);
+        motor.speed(0, -100);            // set motor0 to speed 100
+        motor.speed(1, 1);
     break;
  
     // The line is still within the sensors. 
@@ -116,24 +112,25 @@ void follow_line(int line_position) //follow the line
       m2Speed = 200 + PV;
      
       //set motor speeds
-      digitalWrite(dir_a, LOW);  
-      analogWrite(pwm_a, m1Speed);
-      digitalWrite(dir_b, LOW);  
-      analogWrite(pwm_b, m2Speed);
+      motor.speed(0, -100);            // set motor0 to speed 100
+      motor.speed(1, 100);
       break;
   } 
 
 } // end follow_line 
 
-/*void move_servo(int servoTotal) {
-  ServoRight.write(125, 30, true); //back
-  servoRight.write(90, 30, true); //push out
-  if (servoTotal == 2) //Run the inside servo
+void move_servo(int servoTotal) {
+  servoSetPosition(1000);  // Send 1000us pulses.
+  delay(1000);  
+  servoSetPosition(2000);  // Send 2000us pulses.
+  delay(1000);
   {
-    servoLeft.write(8, 30, true); //back
-    servoLeft.write(45, 30, true); //push out
+    servoSetPosition(1000);  // Send 1000us pulses.
+    delay(1000);  
+    servoSetPosition(2000);  // Send 2000us pulses.
+    delay(1000);
   }
-}*/
+}
 
 // This ISR runs after Timer 2 reaches OCR2A and resets.
 // In this ISR, we set OCR2A in order to schedule when the next
