@@ -5,6 +5,7 @@
 #define NUM_SAMPLES_PER_SENSOR  4  // average 4 analog samples per sensor reading
 #define EMITTER_PIN             2  // emitter is controlled by digital pin 2
 //Docs: https://www.pololu.com/docs/0J19/all
+#define SERVO_PIN 0
 QTRSensorsAnalog qtra((unsigned char[]) {A0, A1, A2, A3, A4, A5}, 
 NUM_SENSORS, NUM_SAMPLES_PER_SENSOR, EMITTER_PIN);
 unsigned int sensorValues[NUM_SENSORS];
@@ -20,9 +21,6 @@ int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
 // Servo
-#define SERVO_PIN 0
-#define SERVO_PIN1 1
-unsigned int servoTotal = 1;
 // This is the time since the last rising edge in units of 0.5us.
 uint16_t volatile servoTime = 0;
 // This is the pulse width we want in units of 0.5us.
@@ -31,8 +29,8 @@ uint16_t volatile servoHighTime = 3000;
 boolean volatile servoHigh = false;
 
 void setup() { // put your setup code here, to run once:
+  Serial.begin(9600);
   motor.begin();
-
   servoInit();
 
   // start calibration phase and move the sensors over both
@@ -40,34 +38,32 @@ void setup() { // put your setup code here, to run once:
   for (int i = 0; i < 250; i++)  // make the calibration take about 5 seconds
   {
     qtra.calibrate();
-    delay(20);
+    //delay(20);
   }
   
-    // print the calibration minimum values measured when emitters were on
-  Serial.begin(9600);
+  //Serial.begin(9600);
   for (int i = 0; i < NUM_SENSORS; i++)
   {
     Serial.print(qtra.calibratedMinimumOn[i]);
     Serial.print(' ');
   }
   Serial.println();
-  
-  // print the calibration maximum values measured when emitters were on
-  for (int i = 0; i < NUM_SENSORS; i++)
-  {
-    Serial.print(qtra.calibratedMaximumOn[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
-  Serial.println();
-  delay(1000);
+  delay(250);
   
 } //End setup
 
 
 void loop() { // put your main code here, to run repeatedly:
-  // read calibrated sensor values + obtain measure of line position from 0 to 7000
+  // read calibrated sensor values + obtain measure of line position from 0 to 5000
   line_position = qtra.readLine(sensorValues);
+  
+  for (unsigned char i = 0; i < NUM_SENSORS; i++)
+  {
+    Serial.print(sensorValues[i]);
+    Serial.print('\t');
+  }
+  //Serial.println(); // uncomment this line if you are using raw values
+  Serial.println(line_position);
   
   // begin line
   follow_line(line_position);
@@ -86,22 +82,22 @@ void follow_line(int line_position) //follow the line
        
     // Line has moved off the left edge of sensor
     // This will make it turn fast to the left
-    case 7000:
-           motor.speed(0, -1);            // set motor0 to speed 100
-           motor.speed(1, 100);
+    case 5000:
+           motor.speed(0, -100);            // RIGHT MOTOR from back
+           motor.speed(1, 1);           // LEFT MOTOR from back
     break;
 
     // Line had moved off the right edge of sensor
     // This will make it turn fast to the right
     case 0:     
-        motor.speed(0, -100);            // set motor0 to speed 100
-        motor.speed(1, 1);
+        motor.speed(0, -1);            // set motor0 to speed 100
+        motor.speed(1, 100);
     break;
  
     // The line is still within the sensors. 
     // This will calculate adjusting speed to keep the line in center.
     default:      
-      error = (float)line_position - 3500; // 2500 is center measure of 5000 far left and 0 on far right
+      error = (float)line_position - 2500; // 2500 is center measure of 5000 far left and 0 on far right
  
       // This sets the motor speed based on a proportional only formula.
       // kp is the floating-point proportional constant you need to tune. 
@@ -115,14 +111,14 @@ void follow_line(int line_position) //follow the line
   
       // this section limits the PV (motor speed pwm value)  
       // limit PV to 55
-      if (PV > 55)
+      if (PV >= 2500)
       {
-        PV = 100;
+        PV = 80;
       }
   
-      if (PV < -55)
+      if (PV < 2500)
       {
-        PV = -100;
+        PV = -80;
       }
       
       // adjust motor speeds to correct the path
@@ -131,24 +127,62 @@ void follow_line(int line_position) //follow the line
       m2Speed = 0 + PV;
      
       //set motor speeds
-      motor.speed(0, -100);            // set motor0 to speed 100
-      motor.speed(1, 100);
+      motor.speed(0, m2Speed);            // RIGHT MOTOR from back
+      motor.speed(1, m1Speed);
       break;
   } 
 
-} // end follow_line 
+  bool lightLine = ((sensorValues[0] < 150) && (sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150) &&  (sensorValues[5] < 150));
+  if (lightLine)
+  {
+     motor.brake(0);
+     motor.brake(1);
+     move_servo();
+     delay(1000);
+     while (lightLine == true)
+     {
+      Serial.print("Turning");
+      Serial.println();
+      motor.speed(1,100);
+      //START DELETE
+      line_position = qtra.readLine(sensorValues);
+  
+  for (unsigned char i = 0; i < NUM_SENSORS; i++)
+  {
+    Serial.print(sensorValues[i]);
+    Serial.print('\t');
+  }
+  //Serial.println(); // uncomment this line if you are using raw values
+  Serial.println(line_position);
+  delay(250);
+  //END DELETE
+  bool darkLine = ((sensorValues[0] > 250) || (sensorValues[1] > 250) || (sensorValues[2] > 250) || (sensorValues[3] > 250) || (sensorValues[4] > 250) ||  (sensorValues[5] > 250));
+  Serial.print("LightLine ");
+  Serial.print(lightLine);
+  Serial.println();
+  Serial.print("DarkLine ");
+  Serial.print(darkLine);
+  delay(250);
+  Serial.println();
+      if (darkLine)
+      {
+        //Serial.print("Break out of turn");
+        Serial.println();
+        break;
+      }
+      //Serial.print("Still going");
+      Serial.println();
+     } 
+  }
 
-void move_servo(int servoTotal) {
+} // end follow_line
+
+void move_servo() {
+  delay(1000); 
   servoSetPosition(1000);  // Send 1000us pulses.
   delay(1000);  
-  servoSetPosition(2000);  // Send 2000us pulses.
+  servoSetPosition(1400);  // Send 2000us pulses.
   delay(1000);
-  {
-    servoSetPosition(1000);  // Send 1000us pulses.
-    delay(1000);  
-    servoSetPosition(2000);  // Send 2000us pulses.
-    delay(1000);
-  }
 }
 
 // This ISR runs after Timer 2 reaches OCR2A and resets.
@@ -228,4 +262,3 @@ void servoSetPosition(uint16_t highTimeMicroseconds)
   servoHighTime = highTimeMicroseconds * 2;
   TIMSK2 |= (1 << OCIE2A); // enable timer compare interrupt
 }
-
