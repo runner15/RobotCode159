@@ -17,7 +17,9 @@
 ## How to Use This Code  
 Download and Install Arduino: https://www.arduino.cc/en/Main/Software  
 Download QTR Library: https://github.com/pololu/qtr-sensors-arduino (Download ZIP)  
-Copy QTRSensors.h from QTRSensors folder to your Ardunio "libraries" folder   
+Extract the ZIP, and move the QTRSensors folder to your Ardunio "libraries" folder  
+Download Seeed Library: https://github.com/Seeed-Studio/SeeedMotorShieldV2 (Download ZIP)
+From Adruino IDE->Sketch->Include Library->Add .ZIP Library->Choose ZIP you just downloaded
 (Libraries guide: https://www.arduino.cc/en/Guide/Libraries)  
 Restart the Arduino IDE
 Download this code and open RobotCode159.ino, or copy the code into a blank Arduino file and compile    
