@@ -1,11 +1,11 @@
 #include <MotorDriver.h>
 #include <QTRSensors.h>
 
-#define NUM_SENSORS             8  // number of sensors used
+#define NUM_SENSORS             6  // number of sensors used
 #define NUM_SAMPLES_PER_SENSOR  4  // average 4 analog samples per sensor reading
 #define EMITTER_PIN             2  // emitter is controlled by digital pin 2
 //Docs: https://www.pololu.com/docs/0J19/all
-QTRSensorsAnalog qtra((unsigned char[]) {0, 1, 2, 3, 4, 5, 6, 7}, 
+QTRSensorsAnalog qtra((unsigned char[]) {A0, A1, A2, A3, A4, A5}, 
 NUM_SENSORS, NUM_SAMPLES_PER_SENSOR, EMITTER_PIN);
 unsigned int sensorValues[NUM_SENSORS];
 unsigned int line_position=0; // value from 0-7000 to indicate position of line between sensor 0 - 7
@@ -20,8 +20,8 @@ int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
 // Servo
-#define SERVO_PIN A0
-#define SERVO_PIN1 A1
+#define SERVO_PIN 0
+#define SERVO_PIN1 1
 unsigned int servoTotal = 1;
 // This is the time since the last rising edge in units of 0.5us.
 uint16_t volatile servoTime = 0;
@@ -43,6 +43,25 @@ void setup() { // put your setup code here, to run once:
     delay(20);
   }
   
+    // print the calibration minimum values measured when emitters were on
+  Serial.begin(9600);
+  for (int i = 0; i < NUM_SENSORS; i++)
+  {
+    Serial.print(qtra.calibratedMinimumOn[i]);
+    Serial.print(' ');
+  }
+  Serial.println();
+  
+  // print the calibration maximum values measured when emitters were on
+  for (int i = 0; i < NUM_SENSORS; i++)
+  {
+    Serial.print(qtra.calibratedMaximumOn[i]);
+    Serial.print(' ');
+  }
+  Serial.println();
+  Serial.println();
+  delay(1000);
+  
 } //End setup
 
 
@@ -60,7 +79,7 @@ void loop() { // put your main code here, to run repeatedly:
 void follow_line(int line_position) //follow the line
 {
 
-  // 0 is far Right sensor while 7 (7000 return) is far Left sensor
+  // 0 is far Right sensor while 5 (5000 return) is far Left sensor
 
   switch(line_position)
   {
@@ -82,7 +101,7 @@ void follow_line(int line_position) //follow the line
     // The line is still within the sensors. 
     // This will calculate adjusting speed to keep the line in center.
     default:      
-      error = (float)line_position - 3500; // 3500 is center measure of 7000 far left and 0 on far right
+      error = (float)line_position - 3500; // 2500 is center measure of 5000 far left and 0 on far right
  
       // This sets the motor speed based on a proportional only formula.
       // kp is the floating-point proportional constant you need to tune. 
@@ -98,18 +117,18 @@ void follow_line(int line_position) //follow the line
       // limit PV to 55
       if (PV > 55)
       {
-        PV = 55;
+        PV = 100;
       }
   
       if (PV < -55)
       {
-        PV = -55;
+        PV = -100;
       }
       
       // adjust motor speeds to correct the path
       // Note that if PV > 0 the robot needs to turn left
-      m1Speed = 200 - PV;
-      m2Speed = 200 + PV;
+      m1Speed = 0 - PV;
+      m2Speed = 0 + PV;
      
       //set motor speeds
       motor.speed(0, -100);            // set motor0 to speed 100
