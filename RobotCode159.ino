@@ -12,6 +12,7 @@ unsigned int sensorValues[NUM_SENSORS];
 unsigned int line_position=0; // value from 0-7000 to indicate position of line between sensor 0 - 7
 
 MotorDriver motor;
+MotorDriver motor1;
 
 // Proportional Control loop vars
 float error=0;
@@ -31,6 +32,7 @@ boolean volatile servoHigh = false;
 void setup() { // put your setup code here, to run once:
   Serial.begin(9600);
   motor.begin();
+  motor1.begin();
   servoInit();
 
   // start calibration phase and move the sensors over both
@@ -136,42 +138,24 @@ void follow_line(int line_position) //follow the line
   if (lightLine)
   {
      motor.brake(0);
-     motor.brake(1);
+     motor1.brake(1);
      move_servo();
      delay(1000);
-     while (lightLine == true)
+     while (lightLine) //Turn Code
      {
-      Serial.print("Turning");
-      Serial.println();
-      motor.speed(1,100);
-      //START DELETE
-      line_position = qtra.readLine(sensorValues);
-  
-  for (unsigned char i = 0; i < NUM_SENSORS; i++)
-  {
-    Serial.print(sensorValues[i]);
-    Serial.print('\t');
-  }
-  //Serial.println(); // uncomment this line if you are using raw values
-  Serial.println(line_position);
-  delay(250);
-  //END DELETE
-  bool darkLine = ((sensorValues[0] > 250) || (sensorValues[1] > 250) || (sensorValues[2] > 250) || (sensorValues[3] > 250) || (sensorValues[4] > 250) ||  (sensorValues[5] > 250));
-  Serial.print("LightLine ");
-  Serial.print(lightLine);
-  Serial.println();
-  Serial.print("DarkLine ");
-  Serial.print(darkLine);
-  delay(250);
-  Serial.println();
-      if (darkLine)
-      {
-        //Serial.print("Break out of turn");
+        motor.speed(1,90);
+        motor1.speed(0,70);
+        Serial.print("Turn Code");
         Serial.println();
-        break;
-      }
-      //Serial.print("Still going");
-      Serial.println();
+        line_position = qtra.readLine(sensorValues);
+        bool darkLine = ((sensorValues[0] > 250) || (sensorValues[1] > 250) || (sensorValues[2] > 250) || (sensorValues[3] > 250) || (sensorValues[4] > 250) ||  (sensorValues[5] > 250));
+        if (darkLine)
+        {
+          Serial.print("Line Catch Code");
+          Serial.println();
+          delay(250);
+          break;
+        }
      } 
   }
 
