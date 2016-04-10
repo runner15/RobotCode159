@@ -30,7 +30,6 @@ uint16_t volatile servoHighTime = 3000;
 boolean volatile servoHigh = false;
 
 void setup() { // put your setup code here, to run once:
-  Serial.begin(9600);
   motor.begin();
   motor1.begin();
   servoInit();
@@ -42,14 +41,7 @@ void setup() { // put your setup code here, to run once:
     qtra.calibrate();
     //delay(20);
   }
-  
-  //Serial.begin(9600);
-  for (int i = 0; i < NUM_SENSORS; i++)
-  {
-    Serial.print(qtra.calibratedMinimumOn[i]);
-    Serial.print(' ');
-  }
-  Serial.println();
+
   delay(250);
   
 } //End setup
@@ -58,15 +50,6 @@ void setup() { // put your setup code here, to run once:
 void loop() { // put your main code here, to run repeatedly:
   // read calibrated sensor values + obtain measure of line position from 0 to 5000
   line_position = qtra.readLine(sensorValues);
-  
-  for (unsigned char i = 0; i < NUM_SENSORS; i++)
-  {
-    Serial.print(sensorValues[i]);
-    Serial.print('\t');
-  }
-  //Serial.println(); // uncomment this line if you are using raw values
-  Serial.println(line_position);
-  
   // begin line
   follow_line(line_position);
 } //End main loop
@@ -146,23 +129,11 @@ void follow_line(int line_position) //follow the line
      {
         motor1.speed(1,80);
         motor.speed(0,70);
-        Serial.print("Turn Code");
-        Serial.println();
-
-        for (unsigned char i = 0; i < NUM_SENSORS; i++)
-  {
-    Serial.print(sensorValues[i]);
-    Serial.print('\t');
-  }
-  //Serial.println(); // uncomment this line if you are using raw values
-  Serial.println(line_position);
-  
+ 
         line_position = qtra.readLine(sensorValues);
         bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
         if (darkLine)
         {
-          Serial.print("Line Catch Code");
-          Serial.println();
           break;
         }
      } 
