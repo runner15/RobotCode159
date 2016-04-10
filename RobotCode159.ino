@@ -137,23 +137,32 @@ void follow_line(int line_position) //follow the line
   bool lightLine = ((sensorValues[0] < 150) && (sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150) &&  (sensorValues[5] < 150));
   if (lightLine)
   {
+    delay(100);
      motor.brake(0);
      motor1.brake(1);
      move_servo();
      delay(1000);
      while (lightLine) //Turn Code
      {
-        motor.speed(1,90);
-        motor1.speed(0,70);
+        motor1.speed(1,80);
+        motor.speed(0,70);
         Serial.print("Turn Code");
         Serial.println();
+
+        for (unsigned char i = 0; i < NUM_SENSORS; i++)
+  {
+    Serial.print(sensorValues[i]);
+    Serial.print('\t');
+  }
+  //Serial.println(); // uncomment this line if you are using raw values
+  Serial.println(line_position);
+  
         line_position = qtra.readLine(sensorValues);
-        bool darkLine = ((sensorValues[0] > 250) || (sensorValues[1] > 250) || (sensorValues[2] > 250) || (sensorValues[3] > 250) || (sensorValues[4] > 250) ||  (sensorValues[5] > 250));
+        bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
         if (darkLine)
         {
           Serial.print("Line Catch Code");
           Serial.println();
-          delay(250);
           break;
         }
      } 
