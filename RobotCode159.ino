@@ -29,6 +29,7 @@ uint16_t volatile servoTime = 0;
 uint16_t volatile servoHighTime = 3000;
 // This is true if the servo pin is currently high.
 boolean volatile servoHigh = false;
+int servoSide = 1;
 
 void setup() { // put your setup code here, to run once:
   motor.begin();
@@ -117,7 +118,8 @@ void follow_line(int line_position) //follow the line
      motor.brake(0);
      motor1.brake(1);
      turnCount = turnCount+1;
-     move_servo();
+     servoSide=1;
+     move_servo(servoSide);
      delay(1000);
      while (lightLine) //Turn Code
      {
@@ -142,6 +144,10 @@ void follow_line(int line_position) //follow the line
           bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
           if (darkLine)
           {
+            motor.brake(0);
+            motor1.brake(1);
+            servoSide=2;
+            move_servo(servoSide);
             break;
           }
         }
@@ -150,12 +156,17 @@ void follow_line(int line_position) //follow the line
 
 } // end follow_line
 
-void move_servo() {
-  delay(1000); 
-  servoSetPosition(1000);  // Send 1000us pulses.
-  delay(1000);  
-  servoSetPosition(1400);  // Send 2000us pulses.
-  delay(1000);
+void move_servo(int servoSide) {
+  if(servoSide == 2) {
+    delay(1000); 
+    servoSetPosition(1000);  // Send 1000us pulses.
+    delay(1000);  
+  }
+  else if(servoSide == 1) {
+    delay(1000);
+    servoSetPosition(1400);  // Send 2000us pulses.
+   delay(1000);
+  }
 }
 
 // This ISR runs after Timer 2 reaches OCR2A and resets.
