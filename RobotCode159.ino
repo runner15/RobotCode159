@@ -9,7 +9,7 @@
 QTRSensorsAnalog qtra((unsigned char[]) {A0, A1, A2, A3, A4, A5}, 
 NUM_SENSORS, NUM_SAMPLES_PER_SENSOR, EMITTER_PIN);
 unsigned int sensorValues[NUM_SENSORS];
-unsigned int line_position=0; // value from 0-7000 to indicate position of line between sensor 0 - 7
+unsigned int line_position=0; // value from 0-5000 to indicate position of line between sensor 0-5
 
 MotorDriver motor;
 MotorDriver motor1;
@@ -17,9 +17,10 @@ MotorDriver motor1;
 // Proportional Control loop vars
 float error=0;
 float PV =0 ;  // Process Variable value calculated to adjust speeds and keep on line
-float kp = 1;  // This is the Proportional value. Tune this value to affect follow_line performance
 int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
+
+int turnCount = 0;
 
 // Servo
 // This is the time since the last rising edge in units of 0.5us.
@@ -50,8 +51,11 @@ void setup() { // put your setup code here, to run once:
 void loop() { // put your main code here, to run repeatedly:
   // read calibrated sensor values + obtain measure of line position from 0 to 5000
   line_position = qtra.readLine(sensorValues);
-  // begin line
-  follow_line(line_position);
+  for (int i=0;i<=2;i++)
+  {
+    // begin line
+    follow_line(line_position);
+  }
 } //End main loop
 
 
@@ -82,17 +86,7 @@ void follow_line(int line_position) //follow the line
     // The line is still within the sensors. 
     // This will calculate adjusting speed to keep the line in center.
     default:      
-      error = (float)line_position - 2500; // 2500 is center measure of 5000 far left and 0 on far right
- 
-      // This sets the motor speed based on a proportional only formula.
-      // kp is the floating-point proportional constant you need to tune. 
-      // Maybe start with a kp value around 1.0, tuned in declared Proportional Control loop vars at the top of this code.
-      // Note that it's very important you get your signs right, or else the
-      // control loop will be unstable.
-   
-      // calculate the new Process Variable
-      // this is the value that will be used to alter the speeds
-      PV = kp * error;
+      PV = (float)line_position - 2500; // 2500 is center measure of 5000 far left and 0 on far right
   
       // this section limits the PV (motor speed pwm value)  
       // limit PV to 55
@@ -106,7 +100,6 @@ void follow_line(int line_position) //follow the line
         PV = -80;
       }
       
-      // adjust motor speeds to correct the path
       // Note that if PV > 0 the robot needs to turn left
       m1Speed = 0 - PV;
       m2Speed = 0 + PV;
@@ -123,18 +116,34 @@ void follow_line(int line_position) //follow the line
     delay(100);
      motor.brake(0);
      motor1.brake(1);
+     turnCount = turnCount+1;
      move_servo();
      delay(1000);
      while (lightLine) //Turn Code
      {
-        motor1.speed(1,80);
-        motor.speed(0,70);
- 
-        line_position = qtra.readLine(sensorValues);
-        bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
-        if (darkLine)
+        if (turnCount==4)
         {
-          break;
+          motor1.speed(1,-50);
+          motor.speed(0,-100);
+          delay(1000);
+          line_position = qtra.readLine(sensorValues);
+          bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+          if (darkLine)
+          {
+            break;
+          }
+        }
+        else
+        {
+          motor1.speed(1,80);
+          motor.speed(0,70);
+   
+          line_position = qtra.readLine(sensorValues);
+          bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+          if (darkLine)
+          {
+            break;
+          }
         }
      } 
   }
