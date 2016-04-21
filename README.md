@@ -7,6 +7,7 @@
 ## QTR Links
 **Code Documentation:** https://www.pololu.com/docs/0J19/all  
 **QTR-8 User's Guide:** https://www.pololu.com/docs/pdf/0J12/QTR-8x.pdf  
+**Servo Code:** https://www.pololu.com/docs/0J57/8.a
 
 ## Arduino UNO Links
 **Buy on Arduino:** https://www.arduino.cc/en/Main/ArduinoBoardUno  
