@@ -52,11 +52,11 @@ void setup() { // put your setup code here, to run once:
 void loop() { // put your main code here, to run repeatedly:
   // read calibrated sensor values + obtain measure of line position from 0 to 5000
   line_position = qtra.readLine(sensorValues);
-  for (int i=0;i<=2;i++)
-  {
+  /*for (int i=0;i<=2;i++)
+  {*/
     // begin line
     follow_line(line_position);
-  }
+  //}
 } //End main loop
 
 
@@ -64,7 +64,6 @@ void loop() { // put your main code here, to run repeatedly:
 //  Proportional Control Only
 void follow_line(int line_position) //follow the line
 {
-
   // 0 is far Right sensor while 5 (5000 return) is far Left sensor
 
   switch(line_position)
@@ -91,12 +90,12 @@ void follow_line(int line_position) //follow the line
   
       // this section limits the PV (motor speed pwm value)  
       // limit PV to 55
-      if (PV >= 2500)
+      if (PV >= 2500) 
       {
         PV = 80;
       }
   
-      if (PV < 2500)
+      if (PV < 2500) 
       {
         PV = -80;
       }
@@ -111,10 +110,10 @@ void follow_line(int line_position) //follow the line
       break;
   } 
 
-  bool lightLine = ((sensorValues[0] < 150) && (sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150) &&  (sensorValues[5] < 150));
+  bool lightLine = ((sensorValues[0] < 150)&&(sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150) &&  (sensorValues[5] < 150));
   if (lightLine)
   {
-    delay(100);
+     delay(100);
      motor.brake(0);
      motor1.brake(1);
      turnCount = turnCount+1;
@@ -125,14 +124,39 @@ void follow_line(int line_position) //follow the line
      {
         if (turnCount==4)
         {
-          motor1.speed(1,-50);
-          motor.speed(0,-100);
-          delay(1000);
+          int uturn = 0;
+          //motor1.speed(1,30); // LEFT MOTOR from back
+          motor.speed(0,-100); // RIGHT MOTOR from back
           line_position = qtra.readLine(sensorValues);
           bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
           if (darkLine)
           {
-            break;
+            motor.brake(0);
+            motor1.brake(1);
+            uturn = 1;
+          }
+          motor.speed(0,-100); // RIGHT MOTOR from back
+          if (darkLine && uturn == 1)
+          {
+             motor.brake(0);
+             motor1.brake(1);
+             uturn = 2;
+          }
+          motor.speed(0,-100);
+          motor1.speed(1,0);
+          if (darkLine && uturn == 2)
+          {
+             motor.brake(0);
+             motor1.brake(1);
+             uturn = 3;
+          }
+          motor.speed(0,-100);
+          motor1.speed(1,-50);
+          uturn =1;
+          delay(1000);
+          if (darkLine && uturn == 3)
+          {
+             break;
           }
         }
         else
