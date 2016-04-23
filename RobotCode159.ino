@@ -120,11 +120,11 @@ void follow_line(int line_position) //follow the line
      servoSide=1;
      move_servo(servoSide);
      delay(1000);
+     int uturn = 0;
      while (lightLine) //Turn Code
      {
         if (turnCount==4)
         {
-          int uturn = 0;
           //motor1.speed(1,30); // LEFT MOTOR from back
           motor.speed(0,-100); // RIGHT MOTOR from back
           line_position = qtra.readLine(sensorValues);
