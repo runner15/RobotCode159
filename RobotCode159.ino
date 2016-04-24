@@ -21,6 +21,7 @@ int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
 int turnCount = 0;
+int turnLeft = 0;
 
 // Servo
 // This is the time since the last rising edge in units of 0.5us.
@@ -109,8 +110,9 @@ void follow_line(int line_position) //follow the line
       motor.speed(1, m1Speed);
       break;
   } 
-
+  
   bool lightLine = ((sensorValues[0] < 150)&&(sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150) &&  (sensorValues[5] < 150));
+  bool allDark = ((sensorValues[0] > 500)&&(sensorValues[1] > 500) && (sensorValues[2] > 500) && (sensorValues[3] > 500) && (sensorValues[4] > 500) &&  (sensorValues[5] > 500));
   if (lightLine)
   {
      delay(100);
@@ -127,22 +129,25 @@ void follow_line(int line_position) //follow the line
         {
           if (uturn == 0)
           {
-            motor1.speed(1,-60); // LEFT MOTOR from back
+            //motor1.speed(1,60); // LEFT MOTOR from back
             motor.speed(0,-100); // RIGHT MOTOR from back
           }
-          if (uturn == 1)
+          else if (uturn == 1)
           {
+            motor.speed(0,-70);
+            motor.speed(1,70);
+            delay(500);
             motor.speed(0,-100); // RIGHT MOTOR from back
+            delay(100);
+            uturn = uturn + 1;
           }
           line_position = qtra.readLine(sensorValues);
           bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
           if (darkLine && uturn == 0)
           {
-            motor.brake(0);
-            motor1.brake(1);
             uturn = 1;
           }
-          else if (darkLine && uturn == 1)
+          else if (darkLine && uturn == 2)
           {
              break;
           }
@@ -164,6 +169,25 @@ void follow_line(int line_position) //follow the line
           }
         }
      } 
+  }
+  if (allDark && turnCount > 4 && turnLeft == 0)
+  {
+    delay(100);
+    motor.brake(0);
+    motor1.brake(1);
+    turnLeft = 1;
+    while(true)
+    {
+      motor1.speed(1,-70);
+      motor.speed(0,-80);
+  
+      line_position = qtra.readLine(sensorValues);
+      bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+      if (darkLine)
+      {
+        break;
+      }
+    }
   }
 
 } // end follow_line
