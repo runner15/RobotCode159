@@ -142,8 +142,7 @@ void follow_line(int line_position) //follow the line
             motor1.brake(1);
             uturn = 1;
           }
-          delay(100);
-          if (darkLine && uturn == 1)
+          else if (darkLine && uturn == 1)
           {
              break;
           }
