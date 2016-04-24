@@ -125,36 +125,25 @@ void follow_line(int line_position) //follow the line
      {
         if (turnCount==4)
         {
-          //motor1.speed(1,30); // LEFT MOTOR from back
-          motor.speed(0,-100); // RIGHT MOTOR from back
+          if (uturn == 0)
+          {
+            motor1.speed(1,-60); // LEFT MOTOR from back
+            motor.speed(0,-100); // RIGHT MOTOR from back
+          }
+          if (uturn == 1)
+          {
+            motor.speed(0,-100); // RIGHT MOTOR from back
+          }
           line_position = qtra.readLine(sensorValues);
           bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
-          if (darkLine)
+          if (darkLine && uturn == 0)
           {
             motor.brake(0);
             motor1.brake(1);
             uturn = 1;
           }
-          motor.speed(0,-100); // RIGHT MOTOR from back
+          delay(100);
           if (darkLine && uturn == 1)
-          {
-             motor.brake(0);
-             motor1.brake(1);
-             uturn = 2;
-          }
-          motor.speed(0,-100);
-          motor1.speed(1,0);
-          if (darkLine && uturn == 2)
-          {
-             motor.brake(0);
-             motor1.brake(1);
-             uturn = 3;
-          }
-          motor.speed(0,-100);
-          motor1.speed(1,-50);
-          uturn =1;
-          delay(1000);
-          if (darkLine && uturn == 3)
           {
              break;
           }
