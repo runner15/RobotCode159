@@ -1,12 +1,12 @@
 #include <MotorDriver.h>
 #include <QTRSensors.h>
 
-#define NUM_SENSORS             6  // number of sensors used
+#define NUM_SENSORS             5  // number of sensors used
 #define NUM_SAMPLES_PER_SENSOR  4  // average 4 analog samples per sensor reading
 #define EMITTER_PIN             2  // emitter is controlled by digital pin 2
 //Docs: https://www.pololu.com/docs/0J19/all
 #define SERVO_PIN 0
-QTRSensorsAnalog qtra((unsigned char[]) {A0, A1, A2, A3, A4, A5}, 
+QTRSensorsAnalog qtra((unsigned char[]) {A0, A1, A2, A3, A5}, 
 NUM_SENSORS, NUM_SAMPLES_PER_SENSOR, EMITTER_PIN);
 unsigned int sensorValues[NUM_SENSORS];
 unsigned int line_position=0; // value from 0-5000 to indicate position of line between sensor 0-5
@@ -72,7 +72,7 @@ void follow_line(int line_position) //follow the line
        
     // Line has moved off the left edge of sensor
     // This will make it turn fast to the left
-    case 5000:
+    case 4000:
            motor.speed(0, -100);            // RIGHT MOTOR from back
            motor.speed(1, 1);           // LEFT MOTOR from back
     break;
@@ -87,16 +87,16 @@ void follow_line(int line_position) //follow the line
     // The line is still within the sensors. 
     // This will calculate adjusting speed to keep the line in center.
     default:      
-      PV = (float)line_position - 2500; // 2500 is center measure of 5000 far left and 0 on far right
+      PV = (float)line_position - 2000; // 2500 is center measure of 5000 far left and 0 on far right
   
       // this section limits the PV (motor speed pwm value)  
       // limit PV to 55
-      if (PV >= 2500) 
+      if (PV >= 2000) 
       {
         PV = 80;
       }
   
-      if (PV < 2500) 
+      if (PV < 2000) 
       {
         PV = -80;
       }
@@ -111,8 +111,8 @@ void follow_line(int line_position) //follow the line
       break;
   } 
   
-  bool lightLine = ((sensorValues[0] < 150)&&(sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150) &&  (sensorValues[5] < 150));
-  bool allDark = ((sensorValues[0] > 500)&&(sensorValues[1] > 500) && (sensorValues[2] > 500) && (sensorValues[3] > 500) && (sensorValues[4] > 500) &&  (sensorValues[5] > 500));
+  bool lightLine = ((sensorValues[0] < 150)&&(sensorValues[1] < 150) && (sensorValues[2] < 150) && (sensorValues[3] < 150) && (sensorValues[4] < 150));
+  bool allDark = ((sensorValues[0] > 500)&&(sensorValues[1] > 500) && (sensorValues[2] > 500) && (sensorValues[3] > 500) && (sensorValues[4] > 500));
   if (lightLine)
   {
      delay(100);
