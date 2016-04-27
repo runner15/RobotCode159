@@ -25,8 +25,8 @@ int turnLeft = 0;
 
 // Servo
 int servoSide = 1;
-int servoRing1  = 2;
-int servoRing2  = 3;
+int servoRing1  = 6;
+int servoRing2  = 7;
 int servoShoot1 = 4;
 int servoShoot2 = 5;
 
@@ -39,12 +39,14 @@ void setup() { // put your setup code here, to run once:
   pinMode(servoRing2, OUTPUT);
   pinMode(servoShoot1, OUTPUT);
   pinMode(servoShoot2, OUTPUT);
+  digitalWrite(servoRing1, LOW);
+  digitalWrite(servoRing2, LOW);
 
-  digitalWrite(servoShoot1, HIGH);
+  /*digitalWrite(servoShoot1, HIGH);
   digitalWrite(servoShoot2, HIGH);
   delay(1000);
   digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);
+  digitalWrite(servoShoot2, LOW);*/
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
@@ -125,7 +127,7 @@ void follow_line(int line_position) //follow the line
   if (lightLine)
   {
      //turn_right(lightLine);
-     delay(100);
+    delay(100);
     motor.brake(0);
     motor1.brake(1);
     turnCount = turnCount+1;
@@ -221,10 +223,12 @@ void follow_line(int line_position) //follow the line
     motor.speed(1, m1Speed);
     if (allDark)
     {
+      motor.brake(0);
+      motor1.brake(1);
       delay(100);
-      motor1.speed(1,-80);
-      motor.speed(0,-70);
-      delay(250);
+      motor1.speed(1,-100);
+      motor.speed(0,-50);
+      delay(1500);
       while(lightLine)
       {
         line_position = qtra.readLine(sensorValues);
@@ -233,7 +237,7 @@ void follow_line(int line_position) //follow the line
         {
           motor.brake(0);
           motor1.brake(1);
-          servoSide=2;
+          //servoSide=2;
           break;
         }
       }
@@ -243,80 +247,19 @@ void follow_line(int line_position) //follow the line
 } // end follow_line
 
 void move_servo(int servoSide) {
+
   if(servoSide == 2) {
-    /*delay(1000); 
-    servoSetPosition(1000);  // Send 1000us pulses.*/
-    digitalWrite(servoRing1, HIGH);
-    delay(1000);
-    digitalWrite(servoRing1, LOW);
-  }
-  else if(servoSide == 1) {
-    /*delay(1000);
-    servoSetPosition(1400);  // Send 2000us pulses.*/
+   
     digitalWrite(servoRing2, HIGH);
     delay(1000);
     digitalWrite(servoRing2, LOW);
   }
-}
+  else if(servoSide == 1) {
 
-/*void turn_right(bool lightLine)
-{ 
-  delay(100);
-  motor.brake(0);
-  motor1.brake(1);
-  turnCount = turnCount+1;
-  servoSide=1;
-  move_servo(servoSide);
-  delay(1000);
-  int uturn = 0;
-  while (lightLine) //Turn Code
-  {
-    if (turnCount==4)
-    {
-      if (uturn == 0)
-      {
-        //motor1.speed(1,60); // LEFT MOTOR from back
-        motor.speed(0,-100); // RIGHT MOTOR from back
-      }
-      else if (uturn == 1)
-      {
-        motor.speed(0,-70);
-        motor.speed(1,70);
-        delay(500);
-        motor.speed(0,-100); // RIGHT MOTOR from back
-        delay(100);
-        uturn = uturn + 1;
-      }
-      line_position = qtra.readLine(sensorValues);
-      bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
-      if (darkLine && uturn == 0)
-      {
-        uturn = 1;
-      }
-      else if (darkLine && uturn == 2)
-      {
-         break;
-      }
-    }
-    else
-    {
-      motor1.speed(1,80);
-      motor.speed(0,70);
+    digitalWrite(servoRing1, HIGH);
+    delay(1000);
+    digitalWrite(servoRing1, LOW);
+  }
   
-      line_position = qtra.readLine(sensorValues);
-      bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
-      if (darkLine)
-      {
-        motor.brake(0);
-        motor1.brake(1);
-        servoSide=2;
-        if (turnCount != 3)
-        {
-          move_servo(servoSide);
-        }
-        break;
-      }
-    }
-  } 
-}*/
+}
 
