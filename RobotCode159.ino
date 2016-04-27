@@ -1,5 +1,6 @@
 #include <MotorDriver.h>
 #include <QTRSensors.h>
+#include <Servo_l.h>
 
 #define NUM_SENSORS             5  // number of sensors used
 #define NUM_SAMPLES_PER_SENSOR  4  // average 4 analog samples per sensor reading
@@ -16,7 +17,7 @@ MotorDriver motor1;
 
 // Proportional Control loop vars
 float error=0;
-float PV =0 ;  // Process Variable value calculated to adjust speeds and keep on line
+float PV=0 ;  // Process Variable value calculated to adjust speeds and keep on line
 int m1Speed=0; // (Left motor)
 int m2Speed=0; // (Right motor)
 
@@ -24,18 +25,23 @@ int turnCount = 0;
 int turnLeft = 0;
 
 // Servo
-// This is the time since the last rising edge in units of 0.5us.
-uint16_t volatile servoTime = 0;
-// This is the pulse width we want in units of 0.5us.
-uint16_t volatile servoHighTime = 3000;
-// This is true if the servo pin is currently high.
-boolean volatile servoHigh = false;
+Servo ring1; 
+Servo ring2; 
+Servo shoot1; 
+Servo shoot2; 
 int servoSide = 1;
+int servoRing1  = 2;
+int servoRing2  = 3;
+int servoShoot1 = 4;
+int servoShoot2 = 5;
 
 void setup() { // put your setup code here, to run once:
   motor.begin();
   motor1.begin();
-  servoInit();
+  ring1.attach(52);
+  ring2.attach(53);
+  shoot1.attach(51);
+  shoot2.attach(50);
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
@@ -115,62 +121,9 @@ void follow_line(int line_position) //follow the line
   bool allDark = ((sensorValues[0] > 500)&&(sensorValues[1] > 500) && (sensorValues[2] > 500) && (sensorValues[3] > 500) && (sensorValues[4] > 500));
   if (lightLine)
   {
-     delay(100);
-     motor.brake(0);
-     motor1.brake(1);
-     turnCount = turnCount+1;
-     servoSide=1;
-     move_servo(servoSide);
-     delay(1000);
-     int uturn = 0;
-     while (lightLine) //Turn Code
-     {
-        if (turnCount==4)
-        {
-          if (uturn == 0)
-          {
-            //motor1.speed(1,60); // LEFT MOTOR from back
-            motor.speed(0,-100); // RIGHT MOTOR from back
-          }
-          else if (uturn == 1)
-          {
-            motor.speed(0,-70);
-            motor.speed(1,70);
-            delay(500);
-            motor.speed(0,-100); // RIGHT MOTOR from back
-            delay(100);
-            uturn = uturn + 1;
-          }
-          line_position = qtra.readLine(sensorValues);
-          bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
-          if (darkLine && uturn == 0)
-          {
-            uturn = 1;
-          }
-          else if (darkLine && uturn == 2)
-          {
-             break;
-          }
-        }
-        else
-        {
-          motor1.speed(1,80);
-          motor.speed(0,70);
-   
-          line_position = qtra.readLine(sensorValues);
-          bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
-          if (darkLine)
-          {
-            motor.brake(0);
-            motor1.brake(1);
-            servoSide=2;
-            move_servo(servoSide);
-            break;
-          }
-        }
-     } 
+     turn_right(lightLine);
   }
-  if (allDark && turnCount > 4 && turnLeft == 0)
+  /*if (allDark && turnCount > 4 && turnLeft == 0)
   {
     delay(100);
     motor.brake(0);
@@ -188,6 +141,43 @@ void follow_line(int line_position) //follow the line
         break;
       }
     }
+  }*/
+
+  if (turnCount == 5)
+  {
+    PV = (float)line_position - 2000;
+    if (PV >= 2000) 
+    {
+      PV = 70;
+    }
+    if (PV < 2000) 
+    {
+      PV = -70;
+    }
+    m1Speed = 0 - PV;
+    m2Speed = 0 + PV;
+   
+    motor.speed(0, m2Speed);            // RIGHT MOTOR from back
+    motor.speed(1, m1Speed);
+    if (allDark)
+    {
+      delay(100);
+      motor1.speed(1,-80);
+      motor.speed(0,-70);
+      delay(250);
+      while(lightLine)
+      {
+        line_position = qtra.readLine(sensorValues);
+        bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+        if (darkLine)
+        {
+          motor.brake(0);
+          motor1.brake(1);
+          servoSide=2;
+          break;
+        }
+      }
+    }
   }
 
 } // end follow_line
@@ -195,90 +185,74 @@ void follow_line(int line_position) //follow the line
 void move_servo(int servoSide) {
   if(servoSide == 2) {
     delay(1000); 
-    servoSetPosition(1000);  // Send 1000us pulses.
+    //servoSetPosition(1000);  // Send 1000us pulses.
     delay(1000);  
   }
   else if(servoSide == 1) {
     delay(1000);
-    servoSetPosition(1400);  // Send 2000us pulses.
+    //servoSetPosition(1400);  // Send 2000us pulses.
    delay(1000);
   }
 }
 
-// This ISR runs after Timer 2 reaches OCR2A and resets.
-// In this ISR, we set OCR2A in order to schedule when the next
-// interrupt will happen.
-// Generally we will set OCR2A to 255 so that we have an
-// interrupt every 128 us, but the first two interrupt intervals
-// after the rising edge will be smaller so we can achieve
-// the desired pulse width.
-ISR(TIMER2_COMPA_vect)
-{
-  // The time that passed since the last interrupt is OCR2A + 1
-  // because the timer value will equal OCR2A before going to 0.
-  servoTime += OCR2A + 1;
-   
-  static uint16_t highTimeCopy = 3000;
-  static uint8_t interruptCount = 0;
-   
-  if(servoHigh)
+void turn_right(bool lightLine)
+{ 
+  delay(100);
+  motor.brake(0);
+  motor1.brake(1);
+  turnCount = turnCount+1;
+  servoSide=1;
+  move_servo(servoSide);
+  delay(1000);
+  int uturn = 0;
+  while (lightLine) //Turn Code
   {
-    if(++interruptCount == 2)
+    if (turnCount==4)
     {
-      OCR2A = 255;
+      if (uturn == 0)
+      {
+        //motor1.speed(1,60); // LEFT MOTOR from back
+        motor.speed(0,-100); // RIGHT MOTOR from back
+      }
+      else if (uturn == 1)
+      {
+        motor.speed(0,-70);
+        motor.speed(1,70);
+        delay(500);
+        motor.speed(0,-100); // RIGHT MOTOR from back
+        delay(100);
+        uturn = uturn + 1;
+      }
+      line_position = qtra.readLine(sensorValues);
+      bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+      if (darkLine && uturn == 0)
+      {
+        uturn = 1;
+      }
+      else if (darkLine && uturn == 2)
+      {
+         break;
+      }
     }
- 
-    // The servo pin is currently high.
-    // Check to see if is time for a falling edge.
-    // Note: We could == instead of >=.
-    if(servoTime >= highTimeCopy)
+    else
     {
-      // The pin has been high enough, so do a falling edge.
-      digitalWrite(SERVO_PIN, LOW);
-      servoHigh = false;
-      interruptCount = 0;
+      motor1.speed(1,80);
+      motor.speed(0,70);
+  
+      line_position = qtra.readLine(sensorValues);
+      bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+      if (darkLine)
+      {
+        motor.brake(0);
+        motor1.brake(1);
+        servoSide=2;
+        if (turnCount != 3)
+        {
+          move_servo(servoSide);
+        }
+        break;
+      }
     }
   } 
-  else
-  {
-    // The servo pin is currently low.
-     
-    if(servoTime >= 40000)
-    {
-      // We've hit the end of the period (20 ms),
-      // so do a rising edge.
-      highTimeCopy = servoHighTime;
-      digitalWrite(SERVO_PIN, HIGH);
-      servoHigh = true;
-      servoTime = 0;
-      interruptCount = 0;
-      OCR2A = ((highTimeCopy % 256) + 256)/2 - 1;
-    }
-  }
 }
- 
-void servoInit()
-{
-  digitalWrite(SERVO_PIN, LOW);
-  pinMode(SERVO_PIN, OUTPUT);
-   
-  // Turn on CTC mode.  Timer 2 will count up to OCR2A, then
-  // reset to 0 and cause an interrupt.
-  TCCR2A = (1 << WGM21);
-  // Set a 1:8 prescaler.  This gives us 0.5us resolution.
-  TCCR2B = (1 << CS21);
-   
-  // Put the timer in a good default state.
-  TCNT2 = 0;
-  OCR2A = 255;
-   
-  TIMSK2 |= (1 << OCIE2A);  // Enable timer compare interrupt.
-  sei();   // Enable interrupts.
-}
- 
-void servoSetPosition(uint16_t highTimeMicroseconds)
-{
-  TIMSK2 &= ~(1 << OCIE2A); // disable timer compare interrupt
-  servoHighTime = highTimeMicroseconds * 2;
-  TIMSK2 |= (1 << OCIE2A); // enable timer compare interrupt
-}
+
