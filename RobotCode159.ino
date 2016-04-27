@@ -226,8 +226,8 @@ void follow_line(int line_position) //follow the line
       motor.brake(0);
       motor1.brake(1);
       delay(100);
-      motor1.speed(1,-100);
-      motor.speed(0,-50);
+      motor1.speed(1,0);
+      motor.speed(0,80);
       delay(1500);
       while(lightLine)
       {
