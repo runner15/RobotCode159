@@ -39,21 +39,14 @@ void setup() { // put your setup code here, to run once:
   pinMode(servoRing2, OUTPUT);
   pinMode(servoShoot1, OUTPUT);
   pinMode(servoShoot2, OUTPUT);
-  //digitalWrite(servoRing1, HIGH);
-  digitalWrite(servoRing2, HIGH);
-  digitalWrite(servoShoot1, HIGH);
-  digitalWrite(servoShoot2, HIGH);
-  delay(100);
-  //digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);
   digitalWrite(servoRing1, LOW);
   digitalWrite(servoRing2, LOW);
 
-  /*digitalWrite(servoShoot1, HIGH);
+  digitalWrite(servoShoot1, HIGH);
   digitalWrite(servoShoot2, HIGH);
   delay(1000);
   digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);*/
+  digitalWrite(servoShoot2, LOW);
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
@@ -236,8 +229,8 @@ void follow_line(int line_position) //follow the line
       turnCount = turnCount+1;
       turnLeft = 1;
       delay(100);
-      motor1.speed(1,-75);
-      motor.speed(0,-90);
+      motor1.speed(1,-80);
+      motor.speed(0,-100);
       delay(1000);
       while(true)
       {
@@ -245,7 +238,6 @@ void follow_line(int line_position) //follow the line
         bool darkLine = ((sensorValues[0] > 250) || (sensorValues[1] > 250));
         if (darkLine)
         {
-          delay(150);
           motor.brake(0);
           motor1.brake(1);
           //servoSide=2;
