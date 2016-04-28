@@ -39,14 +39,15 @@ void setup() { // put your setup code here, to run once:
   pinMode(servoRing2, OUTPUT);
   pinMode(servoShoot1, OUTPUT);
   pinMode(servoShoot2, OUTPUT);
+  digitalWrite(servoRing1, HIGH);
+  digitalWrite(servoRing2, HIGH);
+  digitalWrite(servoShoot1, HIGH);
+  digitalWrite(servoShoot2, HIGH);
+  delay(100);
+  digitalWrite(servoShoot1, LOW);
+  digitalWrite(servoShoot2, LOW);
   digitalWrite(servoRing1, LOW);
   digitalWrite(servoRing2, LOW);
-
-  /*digitalWrite(servoShoot1, HIGH);
-  digitalWrite(servoShoot2, HIGH);
-  delay(1000);
-  digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);*/
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
@@ -223,18 +224,22 @@ void follow_line(int line_position) //follow the line
     motor.speed(1, m1Speed);
     if (allDark)
     {
+      delay(3000);
       motor.brake(0);
       motor1.brake(1);
+      turnCount = turnCount+1;
+      turnLeft = 1;
       delay(100);
-      motor1.speed(1,0);
-      motor.speed(0,80);
-      delay(1500);
-      while(lightLine)
+      motor1.speed(1,-75);
+      motor.speed(0,-90);
+      delay(1000);
+      while(true)
       {
         line_position = qtra.readLine(sensorValues);
-        bool darkLine = ((sensorValues[3] > 250) || (sensorValues[4] > 250));
+        bool darkLine = ((sensorValues[0] > 250) || (sensorValues[1] > 250));
         if (darkLine)
         {
+          delay(150);
           motor.brake(0);
           motor1.brake(1);
           //servoSide=2;
@@ -243,6 +248,14 @@ void follow_line(int line_position) //follow the line
       }
     }
   }
+  /*if (allDark && turnLeft == 1)
+  {   
+    motor.speed(0, 90);            // RIGHT MOTOR from back
+    motor.speed(1, 80);
+    delay(4000);
+    motor.brake(0);
+    motor1.brake(1);
+  }*/
 
 } // end follow_line
 
