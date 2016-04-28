@@ -51,9 +51,19 @@ void setup() { // put your setup code here, to run once:
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
+  /*motor.speed(0, -70);
+  motor.speed(1, 70);
+  delay(500);
+  motor.brake(0);
+  motor.brake(1);*/
   for (int i = 0; i < 250; i++)  // make the calibration take about 5 seconds
   {
+    motor.speed(0, -70);
+    motor.speed(1, 70);
+    motor.speed(0, -70);
     qtra.calibrate();
+    motor.brake(0);
+    motor.brake(1);
     //delay(20);
   }
 
