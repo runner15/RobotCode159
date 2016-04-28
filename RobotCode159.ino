@@ -39,8 +39,8 @@ void setup() { // put your setup code here, to run once:
   pinMode(servoRing2, OUTPUT);
   pinMode(servoShoot1, OUTPUT);
   pinMode(servoShoot2, OUTPUT);
-  digitalWrite(servoRing1, LOW);
-  digitalWrite(servoRing2, LOW);
+  //digitalWrite(servoRing1, LOW);
+  //digitalWrite(servoRing2, LOW);
 
   digitalWrite(servoShoot1, HIGH);
   digitalWrite(servoShoot2, HIGH);
@@ -132,7 +132,10 @@ void follow_line(int line_position) //follow the line
     motor1.brake(1);
     turnCount = turnCount+1;
     servoSide=1;
-    move_servo(servoSide);
+    if (turnCount != 4 && turnCount != 7)
+    {
+      move_servo(servoSide);
+    }
     delay(1000);
     int uturn = 0;
     while (lightLine) //Turn Code
@@ -176,7 +179,7 @@ void follow_line(int line_position) //follow the line
           motor.brake(0);
           motor1.brake(1);
           servoSide=2;
-          if (turnCount != 3)
+          if (turnCount != 3 && turnCount != 5 && turnCount != 6)
           {
             move_servo(servoSide);
           }
@@ -226,7 +229,6 @@ void follow_line(int line_position) //follow the line
       delay(3000);
       motor.brake(0);
       motor1.brake(1);
-      turnCount = turnCount+1;
       turnLeft = 1;
       delay(100);
       motor1.speed(1,-80);
@@ -240,20 +242,21 @@ void follow_line(int line_position) //follow the line
         {
           motor.brake(0);
           motor1.brake(1);
+          turnCount = turnCount+1;
           //servoSide=2;
           break;
         }
       }
     }
   }
-  /*if (allDark && turnLeft == 1)
+  if (turnCount > 7)
   {   
-    motor.speed(0, 90);            // RIGHT MOTOR from back
+    motor.speed(0, -90);            // RIGHT MOTOR from back
     motor.speed(1, 80);
-    delay(4000);
-    motor.brake(0);
-    motor1.brake(1);
-  }*/
+    delay(6500);
+    motor.stop(0);
+    motor1.stop(1);
+  }
 
 } // end follow_line
 
@@ -264,6 +267,7 @@ void move_servo(int servoSide) {
     digitalWrite(servoRing2, HIGH);
     delay(1000);
     digitalWrite(servoRing2, LOW);
+    delay(1000);
   }
   else if(servoSide == 1) {
 
