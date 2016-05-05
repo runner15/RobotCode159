@@ -31,11 +31,17 @@ int servoShoot1 = 4;
 int servoShoot2 = 5;
 
 int startup = 0;
-int startpin = 0;
+int startpin = 2;
 
 void setup() { // put your setup code here, to run once:
   motor.begin();
   motor1.begin();
+
+  for (int i = 0; i < 250; i++)  // make the calibration take about 5 seconds
+  {
+    qtra.calibrate();
+    //delay(20);
+  }
 
   //Servo pin modes to send signal to MEGA
   pinMode(servoRing1, OUTPUT);
@@ -48,11 +54,7 @@ void setup() { // put your setup code here, to run once:
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
-  for (int i = 0; i < 250; i++)  // make the calibration take about 5 seconds
-  {
-    qtra.calibrate();
-    //delay(20);
-  }
+  
 
   delay(250);
 
