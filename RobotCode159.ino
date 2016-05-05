@@ -55,12 +55,6 @@ void setup() { // put your setup code here, to run once:
   }
 
   delay(250);
-
-  digitalWrite(servoShoot1, HIGH);
-  digitalWrite(servoShoot2, HIGH);
-  delay(1000);
-  digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);
   
 } //End setup
 
@@ -72,6 +66,12 @@ void loop() { // put your main code here, to run repeatedly:
   }
   if (startup == 1)
   {
+    digitalWrite(servoShoot1, HIGH);
+    digitalWrite(servoShoot2, HIGH);
+    delay(1000);
+    digitalWrite(servoShoot1, LOW);
+    digitalWrite(servoShoot2, LOW);
+  
     motor.speed(0, -90);            // RIGHT MOTOR from back
     motor.speed(1, 75);
     delay(50);
