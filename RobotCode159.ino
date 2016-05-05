@@ -30,6 +30,9 @@ int servoRing2  = 7;
 int servoShoot1 = 4;
 int servoShoot2 = 5;
 
+int startup = 0;
+int startpin = 0;
+
 void setup() { // put your setup code here, to run once:
   motor.begin();
   motor1.begin();
@@ -41,12 +44,7 @@ void setup() { // put your setup code here, to run once:
   pinMode(servoShoot2, OUTPUT);
   //digitalWrite(servoRing1, LOW);
   //digitalWrite(servoRing2, LOW);
-
-  digitalWrite(servoShoot1, HIGH);
-  digitalWrite(servoShoot2, HIGH);
-  delay(1000);
-  digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);
+  pinMode(startpin, INPUT);
 
   // start calibration phase and move the sensors over both
   // reflectance extremes they will encounter in your application:
@@ -57,18 +55,35 @@ void setup() { // put your setup code here, to run once:
   }
 
   delay(250);
+
+  digitalWrite(servoShoot1, HIGH);
+  digitalWrite(servoShoot2, HIGH);
+  delay(1000);
+  digitalWrite(servoShoot1, LOW);
+  digitalWrite(servoShoot2, LOW);
   
 } //End setup
 
-
 void loop() { // put your main code here, to run repeatedly:
-  // read calibrated sensor values + obtain measure of line position from 0 to 5000
-  line_position = qtra.readLine(sensorValues);
-  /*for (int i=0;i<=2;i++)
-  {*/
+  int starting = digitalRead(startpin);
+  if(starting == 1)
+  {
+    startup = 1;
+  }
+  if (startup == 1)
+  {
+    motor.speed(0, -90);            // RIGHT MOTOR from back
+    motor.speed(1, 75);
+    delay(50);
+    startup = 2;  
+  }
+  if (startup == 2)
+  {
+    // read calibrated sensor values + obtain measure of line position from 0 to 5000
+    line_position = qtra.readLine(sensorValues);
     // begin line
     follow_line(line_position);
-  //}
+  }
 } //End main loop
 
 
