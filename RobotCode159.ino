@@ -55,16 +55,29 @@ void setup() { // put your setup code here, to run once:
   }
 
   delay(250);
+
+  /*digitalWrite(servoShoot1, HIGH);
+  digitalWrite(servoShoot2, HIGH);
+  delay(1000);
+  digitalWrite(servoShoot1, LOW);
+  digitalWrite(servoShoot2, LOW);*/
   
 } //End setup
 
 void loop() { // put your main code here, to run repeatedly:
   int starting = digitalRead(startpin);
-  if(starting == 1)
+  if (startup == 2)
+  {
+    // read calibrated sensor values + obtain measure of line position from 0 to 5000
+    line_position = qtra.readLine(sensorValues);
+    // begin line
+    follow_line(line_position);
+  }
+  else if(starting == 1)
   {
     startup = 1;
   }
-  if (startup == 1)
+  else if (startup == 1)
   {
     digitalWrite(servoShoot1, HIGH);
     digitalWrite(servoShoot2, HIGH);
@@ -76,13 +89,6 @@ void loop() { // put your main code here, to run repeatedly:
     motor.speed(1, 75);
     delay(50);
     startup = 2;  
-  }
-  if (startup == 2)
-  {
-    // read calibrated sensor values + obtain measure of line position from 0 to 5000
-    line_position = qtra.readLine(sensorValues);
-    // begin line
-    follow_line(line_position);
   }
 } //End main loop
 
@@ -142,6 +148,10 @@ void follow_line(int line_position) //follow the line
   if (lightLine)
   {
      //turn_right(lightLine);
+     if (turnCount == 2 || turnCount == 4)
+     {
+      delay(120);
+     }
     delay(100);
     motor.brake(0);
     motor1.brake(1);
