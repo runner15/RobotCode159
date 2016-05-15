@@ -9,7 +9,8 @@
 QTRSensorsAnalog qtra((unsigned char[]) {A0, A1, A2, A3, A5}, 
 NUM_SENSORS, NUM_SAMPLES_PER_SENSOR, EMITTER_PIN);
 unsigned int sensorValues[NUM_SENSORS];
-unsigned int line_position=0; // value from 0-5000 to indicate position of line between sensor 0-5
+unsigned int line_position=0; 
+// value from 0-4000 to indicate position of line between sensor 0-4
 
 MotorDriver motor;
 MotorDriver motor1;
@@ -37,40 +38,30 @@ void setup() { // put your setup code here, to run once:
   motor.begin();
   motor1.begin();
 
+  // start calibration phase and move the sensors over both
+  // reflectance extremes they will encounter in your application:
   for (int i = 0; i < 250; i++)  // make the calibration take about 5 seconds
   {
     qtra.calibrate();
     //delay(20);
   }
 
-  //Servo pin modes to send signal to MEGA
+  //Servo pin modes to send signal to second UNO
   pinMode(servoRing1, OUTPUT);
   pinMode(servoRing2, OUTPUT);
   pinMode(servoShoot1, OUTPUT);
   pinMode(servoShoot2, OUTPUT);
-  //digitalWrite(servoRing1, LOW);
-  //digitalWrite(servoRing2, LOW);
   pinMode(startpin, INPUT);
 
-  // start calibration phase and move the sensors over both
-  // reflectance extremes they will encounter in your application:
-  
-
   delay(250);
-
-  /*digitalWrite(servoShoot1, HIGH);
-  digitalWrite(servoShoot2, HIGH);
-  delay(1000);
-  digitalWrite(servoShoot1, LOW);
-  digitalWrite(servoShoot2, LOW);*/
-  
 } //End setup
 
 void loop() { // put your main code here, to run repeatedly:
   int starting = digitalRead(startpin);
   if (startup == 2)
   {
-    // read calibrated sensor values + obtain measure of line position from 0 to 5000
+    // read calibrated sensor values + obtain 
+    //measure of line position from 0 to 4000
     line_position = qtra.readLine(sensorValues);
     // begin line
     follow_line(line_position);
@@ -87,19 +78,18 @@ void loop() { // put your main code here, to run repeatedly:
     digitalWrite(servoShoot1, LOW);
     digitalWrite(servoShoot2, LOW);
   
-    motor.speed(0, -90);            // RIGHT MOTOR from back
+    motor.speed(0, -90);  // RIGHT MOTOR from back
     motor.speed(1, 75);
-    delay(50);
+    delay(1000);
     startup = 2;  
   }
 } //End main loop
 
 
 // line following function
-//  Proportional Control Only
 void follow_line(int line_position) //follow the line
 {
-  // 0 is far Right sensor while 5 (5000 return) is far Left sensor
+  // 0 is far Right sensor while 4 (4000 return) is far Left sensor
 
   switch(line_position)
   {
@@ -107,7 +97,7 @@ void follow_line(int line_position) //follow the line
     // Line has moved off the left edge of sensor
     // This will make it turn fast to the left
     case 4000:
-           motor.speed(0, -100);            // RIGHT MOTOR from back
+           motor.speed(0, -100);        // RIGHT MOTOR from back
            motor.speed(1, 1);           // LEFT MOTOR from back
     break;
 
@@ -121,7 +111,8 @@ void follow_line(int line_position) //follow the line
     // The line is still within the sensors. 
     // This will calculate adjusting speed to keep the line in center.
     default:      
-      PV = (float)line_position - 2000; // 2500 is center measure of 5000 far left and 0 on far right
+      PV = (float)line_position - 2000; 
+      // 2000 is center measure of 4000 far left and 0 on far right
   
       // this section limits the PV (motor speed pwm value)  
       // limit PV to 55
@@ -149,7 +140,6 @@ void follow_line(int line_position) //follow the line
   bool allDark = ((sensorValues[0] > 500)&&(sensorValues[1] > 500) && (sensorValues[2] > 500) && (sensorValues[3] > 500) && (sensorValues[4] > 500));
   if (lightLine)
   {
-     //turn_right(lightLine);
      if (turnCount == 2 || turnCount == 4)
      {
       delay(120);
@@ -169,14 +159,15 @@ void follow_line(int line_position) //follow the line
     {
       if (turnCount==4)
       {
+        
         if (uturn == 0)
         {
-          //motor1.speed(1,60); // LEFT MOTOR from back
-          motor.speed(0,-100); // RIGHT MOTOR from back
+          motor1.speed(1,-75); // LEFT MOTOR from back
+          motor.speed(0,-98); // RIGHT MOTOR from back
         }
         else if (uturn == 1)
         {
-          motor.speed(0,-70);
+          motor.speed(0,-90);
           motor.speed(1,70);
           delay(500);
           motor.speed(0,-100); // RIGHT MOTOR from back
@@ -278,7 +269,7 @@ void follow_line(int line_position) //follow the line
   }
   if (turnCount > 7)
   {   
-    motor.speed(0, -90);            // RIGHT MOTOR from back
+    motor.speed(0, -90);  // RIGHT MOTOR from back
     motor.speed(1, 80);
     delay(6500);
     motor.stop(0);
@@ -288,20 +279,16 @@ void follow_line(int line_position) //follow the line
 } // end follow_line
 
 void move_servo(int servoSide) {
-
-  if(servoSide == 2) {
-   
+  if(servoSide == 2) {  
     digitalWrite(servoRing2, HIGH);
     delay(1000);
     digitalWrite(servoRing2, LOW);
     delay(1000);
   }
   else if(servoSide == 1) {
-
     digitalWrite(servoRing1, HIGH);
     delay(1000);
     digitalWrite(servoRing1, LOW);
-  }
-  
+  }  
 }
 
